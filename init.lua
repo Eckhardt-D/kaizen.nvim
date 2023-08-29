@@ -1,6 +1,7 @@
 require("kaizen")
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
         "git",
@@ -17,12 +18,12 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
     "nvim-lua/plenary.nvim",
     "nvim-telescope/telescope.nvim",
+    "nvim-tree/nvim-web-devicons",
     {
         "nvim-lualine/lualine.nvim",
         opts = {
             options = {
-                them = "rose-pine",
-                icons_enabled = false,
+                theme = "horizon",
                 component_separators = "|",
                 section_separators = "",
             }
@@ -30,8 +31,11 @@ require("lazy").setup({
     },
     {
         "rose-pine/neovim",
-        as = "rosepine",
+        name = "rose-pine",
         config = function ()
+            require("rose-pine").setup {
+                variant = "moon"
+            }
             vim.cmd("colorscheme rose-pine")
         end
     },
