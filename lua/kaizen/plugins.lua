@@ -5,7 +5,7 @@ require("cloak").setup({
     highlight_group = "Comment",
     patterns = {
         file_pattern = {
-            ".env.*",
+            ".env*",
             "wrangler.toml",
             ".dev.vars",
         },
