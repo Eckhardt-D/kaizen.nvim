@@ -1,16 +1,14 @@
 -- Cloak
 require("cloak").setup({
-    enabled = true,
-    cloak_character = "*",
-    highlight_group = "Comment",
-    patterns = {
-        file_pattern = {
-            ".env*",
-            "wrangler.toml",
-            ".dev.vars",
-        },
-        cloak_patern = "=.+",
+  enabled = true,
+  cloak_character = "*",
+  highlight_group = "Comment",
+  patterns = {
+    {
+      file_pattern = ".env*",
+      cloak_pattern = "=.+",
     },
+  },
 })
 
 -- Vim Fugitive
@@ -21,28 +19,28 @@ local Kaizen_Fugitive = vim.api.nvim_create_augroup("Kaizen_Fugitive", {})
 
 local autocmd = vim.api.nvim_create_autocmd
 autocmd("BufWinEnter", {
-    group = Kaizen_Fugitive,
-    pattern = "*",
-    callback = function()
-        if vim.bo.ft ~= "fugitive" then
-            return
-        end
+  group = Kaizen_Fugitive,
+  pattern = "*",
+  callback = function()
+    if vim.bo.ft ~= "fugitive" then
+      return
+    end
 
-        local bufnr = vim.api.nvim_get_current_buf()
-        local opts = {buffer = bufnr, remap = false}
-        vim.keymap.set("n", "<leader>p", function()
-            vim.cmd.Git('push')
-        end, opts)
+    local bufnr = vim.api.nvim_get_current_buf()
+    local opts = { buffer = bufnr, remap = false }
+    vim.keymap.set("n", "<leader>p", function()
+      vim.cmd.Git('push')
+    end, opts)
 
-        -- rebase always
-        vim.keymap.set("n", "<leader>P", function()
-            vim.cmd.Git({'pull',  '--rebase'})
-        end, opts)
+    -- rebase always
+    vim.keymap.set("n", "<leader>P", function()
+      vim.cmd.Git({ 'pull', '--rebase' })
+    end, opts)
 
-        -- NOTE: It allows me to easily set the branch i am pushing and any tracking
-        -- needed if i did not set the branch up correctly
-        vim.keymap.set("n", "<leader>t", ":Git push -u origin ", opts);
-    end,
+    -- NOTE: It allows me to easily set the branch i am pushing and any tracking
+    -- needed if i did not set the branch up correctly
+    vim.keymap.set("n", "<leader>t", ":Git push -u origin ", opts);
+  end,
 })
 
 -- Harpoon
@@ -65,13 +63,13 @@ local lsp = require("lsp-zero")
 lsp.preset("recommended")
 
 lsp.ensure_installed({
-    "tsserver"
+  "tsserver"
 })
 
 lsp.nvim_workspace()
 
 local cmp = require('cmp')
-local cmp_select = {behavior = cmp.SelectBehavior.Select}
+local cmp_select = { behavior = cmp.SelectBehavior.Select }
 local cmp_mappings = lsp.defaults.cmp_mappings({
   ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
   ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
@@ -87,17 +85,17 @@ lsp.setup_nvim_cmp({
 })
 
 lsp.set_preferences({
-    suggest_lsp_servers = false,
-    sign_icons = {
-        error = 'E',
-        warn = 'W',
-        hint = 'H',
-        info = 'I'
-    }
+  suggest_lsp_servers = false,
+  sign_icons = {
+    error = 'E',
+    warn = 'W',
+    hint = 'H',
+    info = 'I'
+  }
 })
 
 lsp.on_attach(function(client, bufnr)
-  local opts = {buffer = bufnr, remap = false}
+  local opts = { buffer = bufnr, remap = false }
 
   vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
   vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
@@ -114,7 +112,7 @@ end)
 lsp.setup()
 
 vim.diagnostic.config({
-    virtual_text = true
+  virtual_text = true
 })
 
 -- Telescope
@@ -123,13 +121,13 @@ local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>pf', builtin.find_files, {})
 vim.keymap.set('n', '<C-p>', builtin.git_files, {})
 vim.keymap.set('n', '<leader>ps', function()
-	builtin.grep_string({ search = vim.fn.input("Grep > ") })
+  builtin.grep_string({ search = vim.fn.input("Grep > ") })
 end)
 vim.keymap.set('n', '<leader>vh', builtin.help_tags, {})
 
 -- Treesitter
 
-require'nvim-treesitter.configs'.setup {
+require 'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all"
   ensure_installed = { "html", "vimdoc", "javascript", "typescript", "c", "lua", "rust" },
 
@@ -153,6 +151,3 @@ require'nvim-treesitter.configs'.setup {
 }
 
 -- END
-
-
-
