@@ -1,3 +1,9 @@
+-- Snippets
+require("luasnip")
+require("luasnip.loaders.from_vscode").load({
+  paths = { "~/.config/nvim/snippets/" }
+})
+
 -- Cloak
 require("cloak").setup({
   enabled = true,

@@ -1,0 +1,15 @@
+{
+	"Nuxt3 Component": {
+		"scope": "vue",
+		"prefix": "n3",
+		"body": [
+      "<script lang=\"ts\" setup>",
+			"</script>",
+      "",
+			"<template>",
+			"$1",
+			"</template>"
+		],
+		"description": "Creates a standard TS Nuxt3 component"
+	}
+}
