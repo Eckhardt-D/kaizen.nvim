@@ -50,7 +50,6 @@ autocmd("BufWinEnter", {
 })
 
 -- Harpoon
-
 local mark = require("harpoon.mark")
 local ui = require("harpoon.ui")
 
@@ -116,6 +115,10 @@ lsp.on_attach(function(client, bufnr)
 end)
 
 lsp.setup()
+
+local eslint = require('kaizen.eslint');
+
+require('lspconfig').eslint.setup(eslint.default_config)
 
 vim.diagnostic.config({
   virtual_text = true

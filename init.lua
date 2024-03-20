@@ -78,7 +78,7 @@ require("lazy").setup({
     "VonHeikemen/lsp-zero.nvim",
     "folke/zen-mode.nvim",
     "github/copilot.vim",
-    "laytan/cloak.nvim",
+    "laytan/cloak.nvim"
 })
 
 require("kaizen.plugins")
