@@ -116,9 +116,16 @@ end)
 
 lsp.setup()
 
+-- eslint specific config
 local eslint = require('kaizen.eslint');
+local tsserver = require('kaizen.tsserver');
+local lspconfig = require('lspconfig');
 
-require('lspconfig').eslint.setup(eslint.default_config)
+lspconfig.eslint.setup(eslint.default_config)
+
+-- Vue Specific shenanigans :d
+lspconfig.tsserver.setup(tsserver);
+lspconfig.volar.setup {}
 
 vim.diagnostic.config({
   virtual_text = true

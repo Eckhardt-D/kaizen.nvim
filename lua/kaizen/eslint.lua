@@ -6,6 +6,7 @@ local function fix_all(opts)
 
   local eslint_lsp_client = util.get_active_client_by_name(opts.bufnr, 'eslint')
   if eslint_lsp_client == nil then
+    vim.log.levels.ERROR ('No active eslint client found')
     return
   end
 
@@ -119,6 +120,7 @@ return {
         or vim.fn.filereadable(new_root_dir .. '/eslint.config.mts') == 1
         or vim.fn.filereadable(new_root_dir .. '/eslint.config.cts') == 1
       then
+        vim.log.levels.INFO 'Using flat config'
         config.settings.experimental.useFlatConfig = true
       end
 
