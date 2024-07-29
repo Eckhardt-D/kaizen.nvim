@@ -29,14 +29,22 @@ require("lazy").setup({
             }
         }
     },
+    --{
+    --    "rose-pine/neovim",
+    --    name = "rose-pine",
+    --    config = function ()
+    --        require("rose-pine").setup {
+    --            variant = "moon"
+    --        }
+    --        vim.cmd("colorscheme rose-pine")
+    --    end
+    --},
     {
-        "rose-pine/neovim",
-        name = "rose-pine",
+        "folke/tokyonight.nvim",
+        lazy = false,
+        priority = 1000,
         config = function ()
-            require("rose-pine").setup {
-                variant = "moon"
-            }
-            vim.cmd("colorscheme rose-pine")
+          vim.cmd("colorscheme tokyonight")
         end
     },
     {
@@ -90,7 +98,30 @@ require("lazy").setup({
         "nvim-telescope/telescope.nvim", -- For picking b/w different remote methods
       },
       config = true,
-    }
+    },
+
+    -- Leetcode in nvim
+--    {
+--      "kawre/leetcode.nvim",
+--      build = ":TSUpdate html",
+--      dependencies = {
+--          "nvim-telescope/telescope.nvim",
+--          "nvim-lua/plenary.nvim", -- required by telescope
+--          "MunifTanjim/nui.nvim",
+--
+--          -- optional
+--          "nvim-treesitter/nvim-treesitter",
+--          "rcarriga/nvim-notify",
+--          "nvim-tree/nvim-web-devicons",
+--      },
+--      opts = {
+--          -- configuration goes here
+--          lang = "typescript",
+--      },
+--    },
+--
+    -- git status signs on lines
+    "lewis6991/gitsigns.nvim",
 })
 
 require("kaizen.plugins")
