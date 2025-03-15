@@ -30,6 +30,9 @@ vim.opt.updatetime = 50
 
 vim.opt.colorcolumn = "80"
 
+-- Zig don't autoformat
+vim.g.zig_fmt_autosave = 0
+
 ----- TRANSPARENT BACKGROUND -----
 
 -- transparent background

@@ -135,6 +135,9 @@ lspconfig.eslint.setup(eslint.default_config)
 -- Gleam specific config
 lspconfig.gleam.setup {};
 
+-- Tailwind config
+lspconfig.tailwindcss.setup {};
+
 -- Vue Specific shenanigans :d
 lspconfig.tsserver.setup(tsserver);
 lspconfig.volar.setup {};
