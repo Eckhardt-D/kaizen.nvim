@@ -77,7 +77,7 @@ local lsp = require("lsp-zero")
 lsp.preset("recommended")
 
 lsp.ensure_installed({
-  "tsserver"
+  "ts_ls"
 })
 
 lsp.nvim_workspace()
@@ -127,7 +127,7 @@ lsp.setup()
 
 -- eslint specific config
 local eslint = require('kaizen.eslint');
-local tsserver = require('kaizen.tsserver');
+local tsls = require('kaizen.tsls');
 local lspconfig = require('lspconfig');
 
 lspconfig.eslint.setup(eslint.default_config)
@@ -139,7 +139,7 @@ lspconfig.gleam.setup {};
 lspconfig.tailwindcss.setup {};
 
 -- Vue Specific shenanigans :d
-lspconfig.tsserver.setup(tsserver);
+lspconfig.ts_ls.setup(tsls);
 lspconfig.volar.setup {};
 
 vim.diagnostic.config({
