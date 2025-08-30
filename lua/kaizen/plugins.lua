@@ -33,6 +33,7 @@ vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
 local Kaizen_Fugitive = vim.api.nvim_create_augroup("Kaizen_Fugitive", {})
 
 local autocmd = vim.api.nvim_create_autocmd
+
 autocmd("BufWinEnter", {
   group = Kaizen_Fugitive,
   pattern = "*",
@@ -72,19 +73,78 @@ vim.keymap.set("n", "<C-s>", function() ui.nav_file(4) end)
 
 -- LSP
 
-local lsp = require("lsp-zero")
+-- eslint specific config
+local lspconfig_defaults = require('lspconfig').util.default_config;
+local lspconfig = require('lspconfig');
 
-lsp.preset("recommended")
+lspconfig_defaults.capabilities = vim.tbl_deep_extend(
+  'force',
+  lspconfig_defaults.capabilities,
+  require('cmp_nvim_lsp').default_capabilities()
+)
 
-lsp.ensure_installed({
-  "ts_ls"
+-- Function to jump to the next diagnostic
+local function jump_to_next_diagnostic()
+  local next_diagnostic = vim.diagnostic.get_next()
+  if next_diagnostic then
+    vim.diagnostic.jump({ diagnostic = next_diagnostic })
+  else
+    print("No next diagnostic found")
+  end
+end
+
+-- Function to jump to the previous diagnostic
+local function jump_to_prev_diagnostic()
+  local prev_diagnostic = vim.diagnostic.get_prev()
+  if prev_diagnostic then
+    vim.diagnostic.jump({ diagnostic = prev_diagnostic })
+  else
+    print("No previous diagnostic found")
+  end
+end
+
+
+autocmd("LspAttach", {
+  desc = "LSP Actions",
+  callback = function(event)
+    local opts = { buffer = event.buf, remap = false }
+
+    vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
+    vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
+    vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
+    vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
+    vim.keymap.set("n", "[d", jump_to_next_diagnostic, opts)
+    vim.keymap.set("n", "]d", jump_to_prev_diagnostic, opts)
+    vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts)
+    vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
+    vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
+    vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
+  end,
 })
 
-lsp.nvim_workspace()
+-- Mason setup
 
+require('mason').setup({})
+require('mason-lspconfig').setup({
+  ensure_installed = {},
+  automatic_installation = false
+})
+
+lspconfig.ts_ls.setup(require('kaizen.tsls').ts_ls_config)
+--lspconfig.vue_ls.setup(require('kaizen.tsls').vue_ls_config)
+lspconfig.eslint.setup(require('kaizen.eslint').default_config)
+lspconfig.gleam.setup({})
+lspconfig.tailwindcss.setup({})
+
+vim.diagnostic.config({
+  virtual_text = true
+});
+
+-- Autocomplete
 local cmp = require('cmp')
-local cmp_select = { behavior = cmp.SelectBehavior.Select }
-local cmp_mappings = lsp.defaults.cmp_mappings({
+
+local cmp_select = { behavior = 'select' }
+local cmp_mappings = cmp.mapping.preset.insert({
   ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
   ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
   ['<C-y>'] = cmp.mapping.confirm({ select = true }),
@@ -94,57 +154,18 @@ local cmp_mappings = lsp.defaults.cmp_mappings({
 cmp_mappings['<Tab>'] = nil
 cmp_mappings['<S-Tab>'] = nil
 
-lsp.setup_nvim_cmp({
-  mapping = cmp_mappings
+cmp.setup({
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'luasnip' },
+  },
+  mapping = cmp_mappings,
+  snippet = {
+    expand = function(args)
+      vim.snippet.expand(args.body)
+    end,
+  },
 })
-
-lsp.set_preferences({
-  suggest_lsp_servers = false,
-  sign_icons = {
-    error = 'E',
-    warn = 'W',
-    hint = 'H',
-    info = 'I'
-  }
-})
-
-lsp.on_attach(function(_, bufnr)
-  local opts = { buffer = bufnr, remap = false }
-
-  vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
-  vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
-  vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
-  vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
-  vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
-  vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
-  vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts)
-  vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
-  vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
-  vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
-end)
-
-lsp.setup()
-
--- eslint specific config
-local eslint = require('kaizen.eslint');
-local tsls = require('kaizen.tsls');
-local lspconfig = require('lspconfig');
-
-lspconfig.eslint.setup(eslint.default_config)
-
--- Gleam specific config
-lspconfig.gleam.setup {};
-
--- Tailwind config
-lspconfig.tailwindcss.setup {};
-
--- Vue Specific shenanigans :d
-lspconfig.ts_ls.setup(tsls);
-lspconfig.volar.setup {};
-
-vim.diagnostic.config({
-  virtual_text = true
-});
 
 -- Telescope
 
