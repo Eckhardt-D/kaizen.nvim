@@ -1,37 +1,4 @@
 local util = require 'lspconfig.util'
-local lsp = vim.lsp
-
-local function fix_all(opts)
-  opts = opts or {}
-
-  local eslint_lsp_client = util.get_active_client_by_name(opts.bufnr, 'eslint')
-  if eslint_lsp_client == nil then
-    vim.log.levels.ERROR ('No active eslint client found')
-    return
-  end
-
-  local request
-  if opts.sync then
-    request = function(bufnr, method, params)
-      eslint_lsp_client.request_sync(method, params, nil, bufnr)
-    end
-  else
-    request = function(bufnr, method, params)
-      eslint_lsp_client.request(method, params, nil, bufnr)
-    end
-  end
-
-  local bufnr = util.validate_bufnr(opts.bufnr or 0)
-  request(0, 'workspace/executeCommand', {
-    command = 'eslint.applyAllFixes',
-    arguments = {
-      {
-        uri = vim.uri_from_bufnr(bufnr),
-        version = lsp.util.buf_versions[bufnr],
-      },
-    },
-  })
-end
 
 local root_file = {
   '.eslintrc',
