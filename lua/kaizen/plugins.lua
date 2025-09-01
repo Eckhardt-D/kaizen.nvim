@@ -73,7 +73,6 @@ vim.keymap.set("n", "<C-s>", function() ui.nav_file(4) end)
 
 -- LSP
 
--- eslint specific config
 local lspconfig_defaults = require('lspconfig').util.default_config;
 local lspconfig = require('lspconfig');
 
@@ -123,22 +122,21 @@ autocmd("LspAttach", {
 })
 
 -- Mason setup
-
 require('mason').setup({})
 require('mason-lspconfig').setup({
   ensure_installed = {},
   automatic_installation = false
 })
 
-lspconfig.ts_ls.setup(require('kaizen.tsls').ts_ls_config)
---lspconfig.vue_ls.setup(require('kaizen.tsls').vue_ls_config)
 lspconfig.eslint.setup(require('kaizen.eslint').default_config)
 lspconfig.gleam.setup({})
 lspconfig.tailwindcss.setup({})
+-- lspconfig.ts_ls.setup(require('kaizen.vue').ts_ls_config)
+lspconfig.vue_ls.setup(require('kaizen.vue').vue_ls_config)
 
 vim.diagnostic.config({
   virtual_text = true
-});
+})
 
 -- Autocomplete
 local cmp = require('cmp')

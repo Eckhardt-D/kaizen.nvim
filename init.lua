@@ -77,40 +77,6 @@ require("lazy").setup({
     "folke/zen-mode.nvim",
     "github/copilot.vim",
     "laytan/cloak.nvim",
-
-    -- For developing in Docker containers
-    {
-      "amitds1997/remote-nvim.nvim",
-      version = "*", -- Pin to GitHub releases
-      dependencies = {
-        "nvim-lua/plenary.nvim", -- For standard functions
-        "MunifTanjim/nui.nvim", -- To build the plugin UI
-        "nvim-telescope/telescope.nvim", -- For picking b/w different remote methods
-      },
-      config = true,
-    },
-
-    -- Leetcode in nvim
---    {
---      "kawre/leetcode.nvim",
---      build = ":TSUpdate html",
---      dependencies = {
---          "nvim-telescope/telescope.nvim",
---          "nvim-lua/plenary.nvim", -- required by telescope
---          "MunifTanjim/nui.nvim",
---
---          -- optional
---          "nvim-treesitter/nvim-treesitter",
---          "rcarriga/nvim-notify",
---          "nvim-tree/nvim-web-devicons",
---      },
---      opts = {
---          -- configuration goes here
---          lang = "typescript",
---      },
---    },
---
-    -- git status signs on lines
     "lewis6991/gitsigns.nvim",
 })
 
