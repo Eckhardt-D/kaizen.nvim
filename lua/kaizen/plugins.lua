@@ -129,10 +129,9 @@ require('mason-lspconfig').setup({
 })
 
 lspconfig.eslint.setup(require('kaizen.eslint').default_config)
+lspconfig.vtsls.setup(require('kaizen.vue').vtsls_config)
 lspconfig.gleam.setup({})
 lspconfig.tailwindcss.setup({})
--- lspconfig.ts_ls.setup(require('kaizen.vue').ts_ls_config)
-lspconfig.vue_ls.setup(require('kaizen.vue').vue_ls_config)
 
 vim.diagnostic.config({
   virtual_text = true
