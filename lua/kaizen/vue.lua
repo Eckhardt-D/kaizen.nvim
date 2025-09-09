@@ -11,28 +11,22 @@ local vue_ls_config = {
   cmd = { 'node', vue_language_server_path, '--stdio' },
 }
 
-local vtsls_config = {
+local ts_ls_config = {
   root_dir = require('lspconfig.util').root_pattern('.git'),
-  settings = {
-    vtsls = {
-      tsserver = {
-        globalPlugins = {
-          vue_plugin,
-        },
-      },
-    },
+  init_options = {
+    plugins = { vue_plugin },
   },
   filetypes = {
     'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue'
   },
 }
 
-vim.lsp.config['vtsls'] = vtsls_config
-vim.lsp.enable('vtsls')
+vim.lsp.config('ts_ls', ts_ls_config)
+vim.lsp.config('vue_ls', vue_ls_config)
+vim.lsp.enable({'ts_ls', 'vue_ls'})
 
 return {
-  vtsls_config = vtsls_config,
-  vue_ls_config = vue_ls_config,
+  ts_ls = ts_ls_config,
 }
 
 

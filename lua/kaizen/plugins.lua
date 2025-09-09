@@ -86,7 +86,10 @@ lspconfig_defaults.capabilities = vim.tbl_deep_extend(
 local function jump_to_next_diagnostic()
   local next_diagnostic = vim.diagnostic.get_next()
   if next_diagnostic then
-    vim.diagnostic.jump({ diagnostic = next_diagnostic })
+    vim.diagnostic.jump({
+      diagnostic = next_diagnostic,
+      float = true
+    })
   else
     print("No next diagnostic found")
   end
@@ -96,7 +99,10 @@ end
 local function jump_to_prev_diagnostic()
   local prev_diagnostic = vim.diagnostic.get_prev()
   if prev_diagnostic then
-    vim.diagnostic.jump({ diagnostic = prev_diagnostic })
+    vim.diagnostic.jump({
+      diagnostic = prev_diagnostic,
+      float = true
+    })
   else
     print("No previous diagnostic found")
   end
@@ -128,8 +134,8 @@ require('mason-lspconfig').setup({
   automatic_installation = false
 })
 
+lspconfig.ts_ls.setup(require('kaizen.vue').ts_ls)
 lspconfig.eslint.setup(require('kaizen.eslint').default_config)
-lspconfig.vtsls.setup(require('kaizen.vue').vtsls_config)
 lspconfig.gleam.setup({})
 lspconfig.tailwindcss.setup({})
 

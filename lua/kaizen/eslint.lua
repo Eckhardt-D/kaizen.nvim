@@ -128,10 +128,9 @@ local default_config = {
   },
 }
 
-vim.lsp.config['eslint'] = default_config
+vim.lsp.config('eslint',  default_config)
 vim.lsp.enable('eslint')
 
 return {
   default_config = default_config,
 }
-
