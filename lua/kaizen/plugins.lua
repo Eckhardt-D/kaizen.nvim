@@ -73,14 +73,14 @@ vim.keymap.set("n", "<C-s>", function() ui.nav_file(4) end)
 
 -- LSP
 
-local lspconfig_defaults = require('lspconfig').util.default_config;
-local lspconfig = require('lspconfig');
+-- local lspconfig_defaults = require('lspconfig').util.default_config;
+-- require('lspconfig');
 
-lspconfig_defaults.capabilities = vim.tbl_deep_extend(
-  'force',
-  lspconfig_defaults.capabilities,
-  require('cmp_nvim_lsp').default_capabilities()
-)
+-- lspconfig_defaults.capabilities = vim.tbl_deep_extend(
+--   'force',
+--   lspconfig_defaults.capabilities,
+--   require('cmp_nvim_lsp').default_capabilities()
+-- )
 
 -- Function to jump to the next diagnostic
 local function jump_to_next_diagnostic()
@@ -134,10 +134,15 @@ require('mason-lspconfig').setup({
   automatic_installation = false
 })
 
-lspconfig.ts_ls.setup(require('kaizen.vue').ts_ls)
-lspconfig.eslint.setup(require('kaizen.eslint').default_config)
-lspconfig.gleam.setup({})
-lspconfig.tailwindcss.setup({})
+require('kaizen.typescript')
+require('kaizen.eslint')
+
+-- lspconfig.vtsls.setup(ts_config.vtsls)
+-- lspconfig.vue_ls.setup(ts_config.vue_ls)
+-- lspconfig.eslint.setup(require('kaizen.eslint').default_config)
+-- lspconfig.oxlint.setup(require('kaizen.eslint').oxlint_config)
+-- lspconfig.gleam.setup({})
+-- lspconfig.tailwindcss.setup({})
 
 vim.diagnostic.config({
   virtual_text = true
@@ -208,4 +213,15 @@ require 'nvim-treesitter.configs'.setup {
 -- Git Signs
 require("gitsigns").setup {}
 
--- END
+-- Conform for prettierd
+require("conform").setup({
+  formatters_by_ft = {
+    javascript = { "prettierd" },
+    typescript = { "prettierd" },
+    javascriptreact = { "prettierd" },
+    typescriptreact = { "prettierd" },
+    json = { "prettierd" },
+    vue = { "prettierd" },
+  }
+})
+

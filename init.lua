@@ -78,6 +78,10 @@ require("lazy").setup({
     "github/copilot.vim",
     "laytan/cloak.nvim",
     "lewis6991/gitsigns.nvim",
+    {
+      'stevearc/conform.nvim',
+      opts = {},
+    }
 })
 
 require("kaizen.plugins")
@@ -87,4 +91,13 @@ vim.api.nvim_create_autocmd('BufWritePre', {
     pattern = { "*.tsx", "*.ts", "*.js", "*.jsx", "*.vue" },
     command = "silent! EslintFixAll",
     group = vim.api.nvim_create_augroup("MyAutoJSFormatter", {}),
+})
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = { "*" },
+    callback = function(args)
+      require("conform").format({
+        bufnr = args.buf
+      })
+    end,
 })

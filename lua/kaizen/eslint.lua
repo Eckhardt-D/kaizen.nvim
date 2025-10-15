@@ -128,9 +128,11 @@ local default_config = {
   },
 }
 
-vim.lsp.config('eslint',  default_config)
-vim.lsp.enable('eslint')
-
-return {
-  default_config = default_config,
+local oxlint_config = {
+  filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx', 'vue' },
 }
+
+vim.lsp.config('eslint', default_config)
+vim.lsp.config('oxlint', oxlint_config)
+vim.lsp.enable('eslint')
+vim.lsp.enable('oxlint')
