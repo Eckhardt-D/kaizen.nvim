@@ -86,18 +86,3 @@ require("lazy").setup({
 
 require("kaizen.plugins")
 
--- Eslint format on save
-vim.api.nvim_create_autocmd('BufWritePre', {
-    pattern = { "*.tsx", "*.ts", "*.js", "*.jsx", "*.vue" },
-    command = "silent! EslintFixAll",
-    group = vim.api.nvim_create_augroup("MyAutoJSFormatter", {}),
-})
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = { "*" },
-    callback = function(args)
-      require("conform").format({
-        bufnr = args.buf
-      })
-    end,
-})

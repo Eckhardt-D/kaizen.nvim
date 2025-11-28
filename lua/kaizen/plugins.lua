@@ -129,13 +129,16 @@ autocmd("LspAttach", {
 
 -- Mason setup
 require('mason').setup({})
-require('mason-lspconfig').setup({
-  ensure_installed = {},
-  automatic_installation = false
-})
+--require('mason-lspconfig').setup({
+--  ensure_installed = {},
+--  automatic_installation = false
+--})
 
+require('kaizen.python')
 require('kaizen.typescript')
 require('kaizen.eslint')
+require('kaizen.tailwindcss')
+require('kaizen.go')
 
 -- lspconfig.vtsls.setup(ts_config.vtsls)
 -- lspconfig.vue_ls.setup(ts_config.vue_ls)
@@ -213,15 +216,97 @@ require 'nvim-treesitter.configs'.setup {
 -- Git Signs
 require("gitsigns").setup {}
 
--- Conform for prettierd
+-- Conform
 require("conform").setup({
   formatters_by_ft = {
-    javascript = { "prettierd" },
-    typescript = { "prettierd" },
-    javascriptreact = { "prettierd" },
-    typescriptreact = { "prettierd" },
-    json = { "prettierd" },
-    vue = { "prettierd" },
+    javascript = { "prettierd", "prettier", stop_after_first = true },
+    typescript = { "prettierd", "prettier", stop_after_first = true },
+    javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+    typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+    json = { "prettierd", "prettier", stop_after_first = true },
+    html = { "prettierd", "prettier", stop_after_first = true },
+    css = { "prettierd", "prettier", stop_after_first = true },
+    markdown = { "prettierd", "prettier", stop_after_first = true },
+    vue = { "prettierd", "prettier", stop_after_first = true },
   }
 })
 
+-- Auto format on save if prettier config files are present
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*",
+  callback = function(args)
+    -- run only if there are prettier config files in the project root
+    local prettier_configs = {
+      ".prettierrc",
+      ".prettierrc.json",
+      ".prettierrc.js",
+      "prettier.config.js",
+      ".prettierrc.toml",
+      ".prettierrc.yaml",
+      ".prettierrc.yml"
+    }
+
+    local util = require("lspconfig.util")
+
+    local root = util.root_pattern(
+      unpack(prettier_configs)
+    )(args.file) or ""
+
+    -- Skip formatting if no prettier config found,
+    -- this avoids formatting a project that might
+    -- be using eslint/stylistic instead of prettier
+    if root == "" then
+      return
+    end
+
+    require("conform").format({ bufnr = args.buf })
+  end,
+})
+
+-- Create FormatImports Command based on same core as vscode extension
+vim.api.nvim_create_user_command('FormatImports', function()
+    -- check if import-sorter.json exists in the project root
+    local util = require("lspconfig.util")
+    local root = util.root_pattern("import-sorter.json")(vim.api.nvim_buf_get_name(0)) or ""
+    if root == "" then
+      return
+    end
+
+    -- check if `format-imports` is installed
+    if vim.fn.executable("format-imports") == 0 then
+      return
+    end
+
+    local config_path = root .. "/import-sorter.json"
+
+    -- based on https://github.com/daidodo/format-imports
+    -- which is used by the vscode extension
+    -- must install globally e.g. npm install -g format-imports
+    local cmd = {
+      "format-imports",
+      "--config ",
+      config_path,
+      vim.api.nvim_buf_get_name(0)
+    }
+
+    vim.fn.jobstart(cmd, {
+      on_exit = function(_, exit_code, _)
+        if exit_code == 0 then
+          -- Reload the buffer to reflect changes
+          vim.api.nvim_command("edit!")
+        else
+          print("Failed to format imports")
+        end
+      end,
+    })
+  end, {}
+)
+
+
+-- Use format-imports on save for typescript and javascript files
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.{ts,tsx,js,jsx}",
+  callback = function(args)
+    vim.api.nvim_command("FormatImports")
+  end,
+})

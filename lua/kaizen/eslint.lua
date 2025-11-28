@@ -1,6 +1,6 @@
-local util = require 'lspconfig.util'
+local util = require('lspconfig.util')
 
-local root_file = {
+local eslint_config_files = {
   '.eslintrc',
   '.eslintrc.js',
   '.eslintrc.cjs',
@@ -15,124 +15,84 @@ local root_file = {
   'eslint.config.cts',
 }
 
-local default_config = {
-  filetypes = {
-    'javascript',
-    'javascriptreact',
-    'javascript.jsx',
-    'typescript',
-    'typescriptreact',
-    'typescript.tsx',
-    'vue',
-    'svelte',
-    'astro',
-  },
-  -- https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-file-formats
-  root_dir = function(fname)
-    root_file = util.insert_package_json(root_file, 'eslintConfig', fname)
-    return util.root_pattern(unpack(root_file))(fname)
-  end,
-  -- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
-  settings = {
-    validate = 'on',
-    packageManager = nil,
-    useESLintClass = false,
-    experimental = {
-      useFlatConfig = false,
-    },
-    codeActionOnSave = {
-      enable = false,
-      mode = 'all',
-    },
-    format = true,
-    quiet = false,
-    onIgnoredFiles = 'off',
-    rulesCustomizations = {},
-    run = 'onType',
-    problems = {
-      shortenToSingleLine = false,
-    },
-    -- nodePath configures the directory in which the eslint server should start its node_modules resolution.
-    -- This path is relative to the workspace folder (root dir) of the server instance.
-    nodePath = '',
-    -- use the workspace folder location or the file location (if no workspace folder is open) as the working directory
-    workingDirectory = { mode = 'location' },
-    codeAction = {
-      disableRuleComment = {
-        enable = true,
-        location = 'separateLine',
+local function fix_all(opts)
+  opts = opts or {}
+
+  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+  vim.validate("bufnr", bufnr, "number")
+
+  local client = opts.client or vim.lsp.get_clients({ bufnr = bufnr, name = "eslint" })[1]
+  if not client then return end
+
+  local request
+
+  if opts.sync then
+    request = function(buf, method, params) client:request_sync(method, params, nil, buf) end
+  else
+    request = function(buf, method, params) client:request(method, params, nil, buf) end
+  end
+
+  request(bufnr, "workspace/executeCommand", {
+    command = "eslint.applyAllFixes",
+    arguments = {
+      {
+        uri = vim.uri_from_bufnr(bufnr),
+        version = vim.lsp.util.buf_versions[bufnr],
       },
-      showDocumentation = {
-        enable = true,
-      },
-    },
-  },
-  on_new_config = function(config, new_root_dir)
-    -- The "workspaceFolder" is a VSCode concept. It limits how far the
-    -- server will traverse the file system when locating the ESLint config
-    -- file (e.g., .eslintrc).
-    config.settings.workspaceFolder = {
-      uri = new_root_dir,
-      name = vim.fn.fnamemodify(new_root_dir, ':t'),
     }
+  })
+end
 
-    -- Support flat config
-    if
-      vim.fn.filereadable(new_root_dir .. '/eslint.config.js') == 1
-      or vim.fn.filereadable(new_root_dir .. '/eslint.config.mjs') == 1
-      or vim.fn.filereadable(new_root_dir .. '/eslint.config.cjs') == 1
-      or vim.fn.filereadable(new_root_dir .. '/eslint.config.ts') == 1
-      or vim.fn.filereadable(new_root_dir .. '/eslint.config.mts') == 1
-      or vim.fn.filereadable(new_root_dir .. '/eslint.config.cts') == 1
-    then
-      vim.log.levels.INFO 'Using flat config'
-      config.settings.experimental.useFlatConfig = true
-    end
+local eslint_config = {
 
-    -- Support Yarn2 (PnP) projects
-    local pnp_cjs = util.path.join(new_root_dir, '.pnp.cjs')
-    local pnp_js = util.path.join(new_root_dir, '.pnp.js')
-    if util.path.exists(pnp_cjs) or util.path.exists(pnp_js) then
-      config.cmd = vim.list_extend({ 'yarn', 'exec' }, config.cmd)
-    end
+  on_init = function(client)
+    vim.api.nvim_create_user_command('EslintFixAll', function() fix_all({ client = client, sync = true }) end, {})
   end,
-  handlers = {
-    ['eslint/openDoc'] = function(_, result)
-      if not result then
-        return
-      end
-      local sysname = vim.loop.os_uname().sysname
-      if sysname:match 'Windows' then
-        os.execute(string.format('start %q', result.url))
-      elseif sysname:match 'Linux' then
-        os.execute(string.format('xdg-open %q', result.url))
-      else
-        os.execute(string.format('open %q', result.url))
-      end
-      return {}
-    end,
-    ['eslint/confirmESLintExecution'] = function(_, result)
-      if not result then
-        return
-      end
-      return 4 -- approved
-    end,
-    ['eslint/probeFailed'] = function()
-      vim.notify('[lspconfig] ESLint probe failed.', vim.log.levels.WARN)
-      return {}
-    end,
-    ['eslint/noLibrary'] = function()
-      vim.notify('[lspconfig] Unable to find ESLint library.', vim.log.levels.WARN)
-      return {}
-    end,
-  },
+  root_dir = function(bufnr, on_dir)
+    -- The project root is where the LSP can be started from
+    -- As stated in the documentation above, this LSP supports monorepos and simple projects.
+    -- We select then from the project root, which is identified by the presence of a package
+    -- manager lock file.
+    local root_markers = { 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', 'bun.lock' }
+
+    -- We fallback to the current working directory if no project root is found
+    local project_root = vim.fs.root(bufnr, root_markers) or vim.fn.getcwd()
+    print("ESLint project root: " .. project_root)
+
+    -- We know that the buffer is using ESLint if it has a config file
+    -- in its directory tree.
+    --
+    -- Eslint used to support package.json files as config files, but it doesn't anymore.
+    -- We keep this for backward compatibility.
+    local filename = vim.api.nvim_buf_get_name(bufnr)
+    local eslint_config_files_with_package_json =
+      util.insert_package_json(eslint_config_files, 'eslintConfig', filename)
+    local is_buffer_using_eslint = vim.fs.find(eslint_config_files_with_package_json, {
+      path = filename,
+      type = 'file',
+      limit = 1,
+      upward = true,
+      stop = vim.fs.dirname(project_root),
+    })[1]
+    if not is_buffer_using_eslint then
+      return
+    end
+
+    on_dir(project_root)
+  end,
+  settings = {
+    useFlatConfig = false,
+    experimental = {
+      useFlatConfig = nil,
+    }
+  }
 }
 
-local oxlint_config = {
-  filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx', 'vue' },
-}
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("EslintAutoFix", { clear = true }),
+  pattern = { "*.js", "*.jsx", "*.ts", "*.tsx", "*.vue" },
+  command = "silent! EslintFixAll",
+})
 
-vim.lsp.config('eslint', default_config)
-vim.lsp.config('oxlint', oxlint_config)
+vim.lsp.config('eslint', eslint_config)
 vim.lsp.enable('eslint')
-vim.lsp.enable('oxlint')
